@@ -1,0 +1,79 @@
+service: nwn-server-checker
+frameworkVersion: '2 || 3'
+provider:
+  name: aws
+  runtime: python3.9
+  lambdaHashingVersion: 20201221
+  region: eu-central-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource: arn:aws:dynamodb:eu-central-1:177463710880:table/NwnServerCheckTable # aws noobs!
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: arn:aws:s3:::nwn-server-checker-bucket/* # aws noobs!
+functions:
+  getRecords:
+    handler: src/api.get_records
+    events:
+      - http:
+          path: records
+          method: get
+  getRecordsChart:
+    handler: src/api.get_records_chart
+    events:
+      - http:
+          path: records/chart.png
+          method: get
+          cors: true
+  getRecordsCurrent:
+    handler: src/api.get_records_current
+    events:
+      - http:
+          path: records/current
+          method: get
+  updateRecords:
+    handler: src/service.update_records
+    events:
+      - schedule:
+          rate: cron(*/15 * * * ? *)
+          enabled: true
+resources:
+  Resources:
+    NwnServerCheckTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: NwnServerCheckTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    NwnServerCheckerBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: nwn-server-checker-bucket
+        AccessControl: PublicRead # Allow public read access to objects in the bucket
+plugins:
+  - serverless-python-requirements
+  - serverless-apigw-binary
+package:
+  exclude:
+    - .git/**
+    - .idea/**
+    - client/**
+    - venv/**
+    - README.md
+    - lambdalayers/**
+    - node_module/**
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+  apigwBinary:
+    types:           #list of mime-types
+      - 'image/png'
+      - 'text/html'

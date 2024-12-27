@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="cs" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.2.6/vue.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://kit.fontawesome.com/1e8b9b6262.js" crossOrigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://classless.de/classless.css">
+    <title>Demona - Návštěvnost</title>
+</head>
+
+<style>
+    :root, html[data-theme='light'] {
+        --width: 60rem;
+    }
+    fieldset select, input:not([type=checkbox]):not([type=radio]) {
+        display: block;
+        width: 100%;
+        margin: 0 0 0rem;
+    }
+    td:has(input),
+    td:has(select),
+    td:has(.card),
+    th:has(input) {
+        padding: 0.1rem 0.2rem 0.1rem 0;
+    }
+    input {
+        margin: 0rem 0rem 0rem;
+    }
+</style>
+
+<body>
+<div id="vuaApp" class="container">
+    <h1>Demona - Návštěvnost</h1>
+    <p>
+        Počet hráčů online: {{ recordsCurrent == null ? 'Načítám...' : recordsCurrent}}
+    </p>
+    <h2>Návštěvnost v minulých měsících</h2>
+    <p>
+        <img src="https://2i43wi3lr2.execute-api.eu-central-1.amazonaws.com/prod/records/chart.png" />
+        <img src="https://nwn-server-checker-bucket.s3.eu-central-1.amazonaws.com/demona-chart.png" />
+
+
+    </p>
+    <h2>Autor</h2>
+    <p>Jiří Kačírek, jurass17, (kacirek.j@gmail.com)</p>
+    <p>V případě poruchy mi napište na email.</p>
+
+</div>
+
+</div>
+
+</body>
+
+<script>
+
+    let app = new Vue({
+        el: '#vuaApp',
+        data: {
+            API_URL: "https://2i43wi3lr2.execute-api.eu-central-1.amazonaws.com/prod",
+            history: [],
+            recordsCurrent: null,
+            records: [],
+        },
+        methods: {
+            async loadGetRecords() {
+                const response = await axios({method: 'GET', url: this.API_URL + "/records",});
+                this.records = response.data;
+            },
+            async loadGetRecordsCurrent() {
+                const response = await axios({method: 'GET', url: this.API_URL + "/records/current",});
+                this.recordsCurrent = response.data;
+            },
+        },
+        beforeMount() {
+            this.loadGetRecordsCurrent();
+            this.loadGetRecords();
+        },
+    });
+
+</script>
+
+</body>
+</html>
