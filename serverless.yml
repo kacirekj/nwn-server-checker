@@ -15,30 +15,11 @@ provider:
         - s3:*
       Resource: arn:aws:s3:::nwn-server-checker-bucket/* # aws noobs!
 functions:
-  getRecords:
-    handler: src/api.get_records
-    events:
-      - http:
-          path: records
-          method: get
-  getRecordsChart:
-    handler: src/api.get_records_chart
-    events:
-      - http:
-          path: records/chart.png
-          method: get
-          cors: true
-  getRecordsCurrent:
-    handler: src/api.get_records_current
-    events:
-      - http:
-          path: records/current
-          method: get
   updateRecords:
     handler: src/service.update_records
     events:
       - schedule:
-          rate: cron(*/15 * * * ? *)
+          rate: cron(*/10 * * * ? *)
           enabled: true
 resources:
   Resources:
@@ -60,7 +41,6 @@ resources:
         AccessControl: PublicRead # Allow public read access to objects in the bucket
 plugins:
   - serverless-python-requirements
-  - serverless-apigw-binary
 package:
   exclude:
     - .git/**
@@ -73,7 +53,3 @@ package:
 custom:
   pythonRequirements:
     dockerizePip: non-linux
-  apigwBinary:
-    types:           #list of mime-types
-      - 'image/png'
-      - 'text/html'
